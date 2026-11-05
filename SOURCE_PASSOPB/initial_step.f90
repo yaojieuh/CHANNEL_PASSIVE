@@ -1,11 +1,11 @@
 !--------------------------------------------------------------------
 ! This subroutine feed initial field
 !
-! - Fill U/V/W 
+! - Fill U/V/W
 !     With restart file : read data file from 'restart_vel.h5'
 !     Without restart file : fill non zero numbers in low wave number components
 ! - Fill RK_store field which is needed to solve time advance equation
-! 
+!
 !
 ! Developer : M.K. Lee
 ! Last updated : 2013.01.03
@@ -27,7 +27,7 @@ subroutine initial_step
      dt = 0d0
      target_stat_time = stat_time_interval
      target_data_time = data_time_interval
-  else 
+  else
      if (restart_option.eq.1) then
         call data_read_uvw(U)
         call set_initial_data_uvw(U,RK_store,kx,kz,LMFxr,LMFzr,ny,Yxsz,Yxst,Yzsz,Yzst)
@@ -128,7 +128,7 @@ end subroutine set_initial_value_in_y_pencil
 
 !--------------------------------------------------------------------
 ! This subroutine calculate RK_store field which is needed to solve time advnace equation
-! 
+!
 ! u/v/w need to be provided.
 !
 ! Developer : M.K. Lee
@@ -183,7 +183,7 @@ end subroutine set_initial_data_uvw
 
 subroutine data_read_uvw(Udata)
 
-  use esio
+  use channel_hdf5_io
   use global_variable
   use labs
   use ppdfftw
@@ -195,34 +195,34 @@ subroutine data_read_uvw(Udata)
   real(C_DOUBLE) :: dummy_real(1)
   integer :: dummy_integer(1)
   logical :: read_write
-  type(esio_handle) :: h
+  type(io_handle) :: h
 
-  call esio_handle_initialize(h,MPI_COMM_WORLD)
-  call esio_file_open(h,restart_file_name,.true.,ierr)
+  call io_handle_initialize(h,MPI_COMM_WORLD)
+  call io_file_open(h,restart_file_name,.true.,ierr)
 
-  call esio_line_establish(h,1,1,1,ierr)
+  call io_line_establish(h,1,1,1,ierr)
 
-  call esio_line_read_integer(h,"timestep",dummy_integer,0)
+  call io_line_read_integer(h,"timestep",dummy_integer,0)
   timestep = dummy_integer(1)
   target_timestep = target_timestep + timestep
-  call esio_line_read_double(h,"time",dummy_real,0)
+  call io_line_read_double(h,"time",dummy_real,0)
   time = dummy_real(1)
-  call esio_line_read_double(h,"dt",dummy_real,0)
+  call io_line_read_double(h,"dt",dummy_real,0)
   dt = dummy_real(1)
 
-  call esio_field_establish (h, INT(ny), 1, INT(ny), INT(nx)/2, INT(Yxst)+1, INT(Yxsz), INT(nz), INT(Yzst)+1, INT(Yzsz), ierr)
-  call esio_field_readv_double (h, "u",  Udata(1,1,1,1,1),2)
-  call esio_field_readv_double (h, "v",  Udata(1,1,1,1,2),2)
-  call esio_field_readv_double (h, "w",  Udata(1,1,1,1,3),2)
-  call esio_field_readv_double (h, "theta",  Udata(1,1,1,1,7),2)
-  !call esio_field_readv_double (h, "u",  Udata(1,1,1,1,7),2)
+  call io_field_establish (h, INT(ny), 1, INT(ny), INT(nx)/2, INT(Yxst)+1, INT(Yxsz), INT(nz), INT(Yzst)+1, INT(Yzsz), ierr)
+  call io_field_readv_double (h, "u",  Udata(1,1,1,1,1),2)
+  call io_field_readv_double (h, "v",  Udata(1,1,1,1,2),2)
+  call io_field_readv_double (h, "w",  Udata(1,1,1,1,3),2)
+  call io_field_readv_double (h, "theta",  Udata(1,1,1,1,7),2)
+  !call io_field_readv_double (h, "u",  Udata(1,1,1,1,7),2)
 
-  call esio_file_close(h)
-  call esio_handle_finalize(h)
+  call io_file_close(h)
+  call io_handle_finalize(h)
 
-  
 
- ! close off esio and datafile set
+
+ ! close native HDF5 and datafile set
   if(myrank .eq. 0) then
      Udata(1,:,1,1,1) = Udata(1,:,1,1,1) - U_gal
   endif
@@ -236,7 +236,7 @@ end subroutine data_read_uvw
 
 subroutine data_read_vg(Udata,RKdata)
 
-  use esio
+  use channel_hdf5_io
   use global_variable
   use labs
   use ppdfftw
@@ -250,38 +250,38 @@ subroutine data_read_vg(Udata,RKdata)
   real(C_DOUBLE) :: dummy_u(ny), dummy_w(ny), dummy_t(ny)
   integer :: dummy_integer(1)
   logical :: read_write
-  type(esio_handle) :: h
+  type(io_handle) :: h
 
 
-  call esio_handle_initialize(h,MPI_COMM_WORLD)
-  call esio_file_open(h,restart_file_name,.true.,ierr)
+  call io_handle_initialize(h,MPI_COMM_WORLD)
+  call io_file_open(h,restart_file_name,.true.,ierr)
 
-  call esio_line_establish(h,1,1,1,ierr)
+  call io_line_establish(h,1,1,1,ierr)
 
-  call esio_line_read_integer(h,"timestep",dummy_integer,0)
+  call io_line_read_integer(h,"timestep",dummy_integer,0)
   timestep = dummy_integer(1)
   target_timestep = target_timestep + timestep
-  call esio_line_read_double(h,"time",dummy_real,0)
+  call io_line_read_double(h,"time",dummy_real,0)
   time = dummy_real(1)
-  call esio_line_read_double(h,"dt",dummy_real,0)
+  call io_line_read_double(h,"dt",dummy_real,0)
   dt = dummy_real(1)
 !!$  dt = 0d0
 !!$  time = 0d0
-  call esio_field_establish (h, INT(ny), 1, INT(ny), INT(nx)/2, INT(Yxst)+1, INT(Yxsz), INT(nz), INT(Yzst)+1, INT(Yzsz), ierr)
-  call esio_field_readv_double (h, "v",  Udata(1,1,1,1,2),2)
-  call esio_field_readv_double (h, "g",  RKdata(1,1,1,1,1),2)
-  call esio_field_readv_double (h, "theta",  RKdata(1,1,1,1,3),2)
-  !call esio_field_readv_double (h, "u",  RKdata(1,1,1,1,3),2)
+  call io_field_establish (h, INT(ny), 1, INT(ny), INT(nx)/2, INT(Yxst)+1, INT(Yxsz), INT(nz), INT(Yzst)+1, INT(Yzsz), ierr)
+  call io_field_readv_double (h, "v",  Udata(1,1,1,1,2),2)
+  call io_field_readv_double (h, "g",  RKdata(1,1,1,1,1),2)
+  call io_field_readv_double (h, "theta",  RKdata(1,1,1,1,3),2)
+  !call io_field_readv_double (h, "u",  RKdata(1,1,1,1,3),2)
 
   if(myrank.eq.0) then
-     call esio_line_establish (h, INT(ny), 1, INT(ny), ierr)
+     call io_line_establish (h, INT(ny), 1, INT(ny), ierr)
   else
-     call esio_line_establish (h, INT(ny), 1, 0, ierr)
+     call io_line_establish (h, INT(ny), 1, 0, ierr)
   endif
-  call esio_line_read_double (h,"U_mean", dummy_u(1),1)
-  call esio_line_read_double (h,"W_mean", dummy_w(1),1)
-  call esio_line_read_double (h,"T_mean", dummy_t(1),1)
-  !call esio_line_read_double (h,"U_mean", dummy_t(1),1)
+  call io_line_read_double (h,"U_mean", dummy_u(1),1)
+  call io_line_read_double (h,"W_mean", dummy_w(1),1)
+  call io_line_read_double (h,"T_mean", dummy_t(1),1)
+  !call io_line_read_double (h,"U_mean", dummy_t(1),1)
   if(myrank.eq.0) then
      RKdata(1,:,1,1,1) = dummy_u(:)-U_gal
      RKdata(2,:,1,1,1) = 0d0
@@ -291,8 +291,8 @@ subroutine data_read_vg(Udata,RKdata)
      RKdata(2,:,1,1,3) = 0d0
   endif
 
-  call esio_file_close(h)
-  call esio_handle_finalize(h)
+  call io_file_close(h)
+  call io_handle_finalize(h)
 
 
   return
@@ -312,7 +312,7 @@ subroutine set_initial_data_vg(U,RK_store,kx,kz,LMFxr,LMFzr,ny,Yxsz,Yxst,Yzsz,Yz
 
   size = Yxsz*Yzsz
   xsz = Yxsz
-  
+
 
   !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j,k,l,kxx,kzz,dxg,dxf,dzg,dzf) &
   !$OMP FIRSTPRIVATE(LABS_D0_LU,LABS_D1_B,LABS_D2_B,kx,LMFxr,kz,LMFzr)
@@ -342,7 +342,7 @@ subroutine set_initial_data_vg(U,RK_store,kx,kz,LMFxr,LMFzr,ny,Yxsz,Yxst,Yzsz,Yz
               dxf = kxx*U(i,k,j,5)
               dzf = kzz*U(i,k,j,5)
               U(i,k,j,1) = dxf-dzg
-              U(i,k,j,3) = dxg+dzf	      
+              U(i,k,j,3) = dxg+dzf
            enddo
 	   U(:,k,j,7) =RK_store(:,k,j,3)
         endif
@@ -362,7 +362,7 @@ end subroutine set_initial_data_vg
 
 subroutine data_read_gphi(Udata,RKdata)
 
-  use esio
+  use channel_hdf5_io
   use global_variable
   use labs
   use ppdfftw
@@ -376,47 +376,47 @@ subroutine data_read_gphi(Udata,RKdata)
   real(C_DOUBLE) :: dummy_u(ny), dummy_w(ny), dummy_t(ny)
   integer :: dummy_integer(1)
   logical :: read_write
-  type(esio_handle) :: h
+  type(io_handle) :: h
 
 
-  call esio_handle_initialize(h,MPI_COMM_WORLD)
-  call esio_file_open(h,restart_file_name,.true.,ierr)
+  call io_handle_initialize(h,MPI_COMM_WORLD)
+  call io_file_open(h,restart_file_name,.true.,ierr)
 
-  call esio_line_establish(h,1,1,1,ierr)
+  call io_line_establish(h,1,1,1,ierr)
 
-  call esio_line_read_integer(h,"timestep",dummy_integer,0)
+  call io_line_read_integer(h,"timestep",dummy_integer,0)
   timestep = dummy_integer(1)
   target_timestep = target_timestep + timestep
-  call esio_line_read_double(h,"time",dummy_real,0)
+  call io_line_read_double(h,"time",dummy_real,0)
   time = dummy_real(1)
-  call esio_line_read_double(h,"dt",dummy_real,0)
+  call io_line_read_double(h,"dt",dummy_real,0)
   dt = dummy_real(1)
 
-  
-  call esio_field_establish (h, INT(ny), 1, INT(ny), INT(nx)/2, INT(Yxst)+1, INT(Yxsz), INT(nz), INT(Yzst)+1, INT(Yzsz), ierr)
-  call esio_field_readv_double (h, "g",  RKdata(1,1,1,1,1),2)
-  call esio_field_readv_double (h, "phi",  RKdata(1,1,1,1,2),2)
-  call esio_field_readv_double (h, "theta",  RKdata(1,1,1,1,3),2)
+
+  call io_field_establish (h, INT(ny), 1, INT(ny), INT(nx)/2, INT(Yxst)+1, INT(Yxsz), INT(nz), INT(Yzst)+1, INT(Yzsz), ierr)
+  call io_field_readv_double (h, "g",  RKdata(1,1,1,1,1),2)
+  call io_field_readv_double (h, "phi",  RKdata(1,1,1,1,2),2)
+  call io_field_readv_double (h, "theta",  RKdata(1,1,1,1,3),2)
 
   if(myrank.eq.0) then
-     call esio_line_establish (h, INT(ny), 1, INT(ny), ierr)
+     call io_line_establish (h, INT(ny), 1, INT(ny), ierr)
   else
-     call esio_line_establish (h, INT(ny), 1, 0, ierr)
+     call io_line_establish (h, INT(ny), 1, 0, ierr)
   endif
-  call esio_line_read_double (h,"U_mean", dummy_u(:),1)
-  call esio_line_read_double (h,"W_mean", dummy_w(:),1)
-  call esio_line_read_double (h,"T_mean", dummy_t(:),1)
+  call io_line_read_double (h,"U_mean", dummy_u(:),1)
+  call io_line_read_double (h,"W_mean", dummy_w(:),1)
+  call io_line_read_double (h,"T_mean", dummy_t(:),1)
   if(myrank.eq.0) then
      RKdata(1,:,1,1,1) = dummy_u(:) - U_gal
      RKdata(2,:,1,1,1) = 0d0
      RKdata(1,:,1,1,2) = dummy_w(:)
      RKdata(2,:,1,1,2) = 0d0
-     RKdata(1,:,1,1,3) = dummy_t(:) 
+     RKdata(1,:,1,1,3) = dummy_t(:)
      RKdata(2,:,1,1,3) = 0d0
   endif
 
-  call esio_file_close(h)
-  call esio_handle_finalize(h)
+  call io_file_close(h)
+  call io_handle_finalize(h)
 
 
   return
@@ -454,7 +454,7 @@ subroutine set_initial_data_gphi(U,RK_store,kx,kz,LMFxr,LMFzr,ny,Yxsz,Yxst,Yzsz,
         U(:,k,j,1) = RK_store(:,k,j,1)
         U(:,k,j,3) = RK_store(:,k,j,2)
 	U(:,k,j,7) = RK_store(:,k,j,3)
-        U(:,k,j,2) = (0d0,0d0)	
+        U(:,k,j,2) = (0d0,0d0)
      else
         k2 = (kz(j)*LMFzr)**2 + (kx(k)*LMFxr)**2
         kxx = ci*kx(k)*LMFxr/k2
@@ -494,7 +494,7 @@ subroutine set_initial_data_gphi(U,RK_store,kx,kz,LMFxr,LMFzr,ny,Yxsz,Yxst,Yzsz,
         call labs_mat_mul(D0,U(:,k,j,5),U(:,k,j,2))
         call labs_mat_mul(D1,U(:,k,j,5),U(:,k,j,3))
 
-        
+
         do i=1,LABS_NY
            dxg = kxx*RK_store(i,k,j,1)
            dzg = kzz*RK_store(i,k,j,1)

@@ -1,8 +1,12 @@
+.DEFAULT_GOAL := all
+.PHONY: all clean
 
-MACHINE = ZHUHAI
+
+MACHINE ?= LOCAL
 #MACHINE = TTU_impi
 LDFLAGS =
-SOURCES = module_timer.f90					\
+SOURCES = module_hdf5_io.f90 \
+        module_timer.f90					\
 	module_global_variable.f90				\
 	module_labs.f90						\
 	module_runge_kutta.f90					\
@@ -52,16 +56,12 @@ GSL_DIR=/home/yaoj/SOURCE_FILE/ESIO/gsl-1.16-build
 FFTW_LIB=/home/yaoj/SOURCE_FILE/ESIO/fftw-3.3.7-build/lib
 FFTW_INC=/home/yaoj/SOURCE_FILE/ESIO/fftw-3.3.7-build/include
 HDF_DIR=/home/yaoj/SOURCE_FILE//ESIO/hdf5-1.8.18-build
-ESIO_LIB=/home/yaoj/SOURCE_FILE//ESIO/ESIO-release-0.1.9-build/lib
-ESIO_INC=/home/yaoj/SOURCE_FILE/ESIO/ESIO-release-0.1.9-build/include
 
 GSL_LIBRARY=-L$(GSL_LIB) -lgsl -lgslcblas -lstdc++ -lm
 GSL_INCLUDE = -I$(GSL_DIR)/include
 FFTW3_LIB=-L$(FFTW_LIB) -lfftw3_mpi -lfftw3 -lm
 FFTW3_INC=-I$(FFTW_INC)
-ESIO_LIBRARY = -L$(ESIO_LIB) -lesiof -lm
-ESIO_INCLUDE = -I$(ESIO_LIB)
-HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_hl -lhdf5 -lm -lz
+HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_fortran -lhdf5 -lm -lz
 HDF_INC=-I$(HDF_DIR)/include
 endif
 ########################################################################
@@ -75,16 +75,12 @@ GSL_DIR=/home1/05779/fazlehus/ESIO/gsl-2.7.1-build
 FFTW_LIB=/opt/apps/gcc13/impi21/fftw3/3.3.10/lib
 FFTW_INC=/opt/apps/gcc13/impi21/fftw3/3.3.10//include
 HDF_DIR=/home1/05779/fazlehus/ESIO/hdf5-1.8.18-build
-ESIO_LIB=/home1/05779/fazlehus/ESIO/ESIO-release-0.1.9-build/lib
-ESIO_INC=/home1/05779/fazlehus/ESIO/ESIO-release-0.1.9-build/include
 
 GSL_LIBRARY=-L$(GSL_LIB) -lgsl -lgslcblas -lstdc++ -lm
 GSL_INCLUDE = -I$(GSL_DIR)/include
 FFTW3_LIB=-L$(FFTW_LIB) -lfftw3_mpi -lfftw3 -lm
 FFTW3_INC=-I$(FFTW_INC)
-ESIO_LIBRARY = -L$(ESIO_LIB) -lesiof -lm
-ESIO_INCLUDE = -I$(ESIO_LIB)
-HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_hl -lhdf5 -lm -lz
+HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_fortran -lhdf5 -lm -lz
 HDF_INC=-I$(HDF_DIR)/include
 endif
 ########################################################################
@@ -99,15 +95,11 @@ FFTW_INC=/lustre/work/jieyao/ESIO-ii/fftw-3.3.7-build/include
 #HDF_DIR=/lustre/work/jieyao/esio-019/hdf5-1.10.0-build
 #HDF_DIR=/lustre/work/apps/hdf5-1.8.18-parallel
 HDF_DIR=/lustre/work/jieyao/ESIO-ii/hdf5-1.8.18-build/
-ESIO_LIB=/lustre/work/jieyao/ESIO-ii/esio-0.1.9-build/lib
-ESIO_INC=/lustre/work/jieyao/ESIO-ii/esio-0.1.9-build/include
 GSL_LIBRARY=-L$(GSL_LIB) -lgsl -lgslcblas -lstdc++ -lm
 GSL_INCLUDE = -I$(GSL_DIR)/include
 FFTW3_LIB=-L$(FFTW_LIB) -lfftw3_mpi -lfftw3 -lm
 FFTW3_INC=-I$(FFTW_INC)
-ESIO_LIBRARY = -L$(ESIO_LIB) -lesiof -lm
-ESIO_INCLUDE = -I$(ESIO_LIB)
-HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_hl -lhdf5 -lm -lz
+HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_fortran -lhdf5 -lm -lz
 HDF_INC=-I$(HDF_DIR)/include
 endif
 ########################################################################
@@ -127,15 +119,11 @@ FFTW_LIB=/project/kouri/ESIO/fftw-3.3.7-build/lib
 FFTW_INC=/project/kouri/ESIO/fftw-3.3.7-build/include
 
 HDF_DIR= /project/kouri/ESIO/hdf5-1.8.18-build
-ESIO_LIB=/project/kouri/ESIO/ESIO-release-0.1.9-build/lib
-ESIO_INC=/project/kouri/ESIO/ESIO-release-0.1.9-build/lib
 GSL_LIBRARY=-L$(GSL_LIB) -lgsl -lgslcblas -lstdc++ -lm
 GSL_INCLUDE = -I$(GSL_DIR)/include
 FFTW3_LIB=-L$(FFTW_LIB) -lfftw3_mpi -lfftw3 -lm
 FFTW3_INC=-I$(FFTW_INC)
-ESIO_LIBRARY = -L$(ESIO_LIB) -lesiof -lm
-ESIO_INCLUDE = -I$(ESIO_INC)	
-HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_hl -lhdf5 -lm -lz
+HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_fortran -lhdf5 -lm -lz
 HDF_INC=-I$(HDF_DIR)/include
 endif
 ########################################################################
@@ -154,15 +142,11 @@ FFTW_INC=/home/jieyao/CODE_TEST/CHANNEL/fftw-3.3.7-build//include
 
 #HDF_DIR=/opt/apps/nfs/spack/opt/spack/linux-centos8-zen2/gcc-10.1.0/hdf5-1.10.6-bfqfwx3iaupxuyeqzx7lshc424gfeang
 HDF_DIR=/home/jieyao/CODE_TEST/CHANNEL/hdf5-1.8.18-build
-ESIO_LIB=/home/jieyao/CODE_TEST/CHANNEL/esio-0.1.9-build/lib
-ESIO_INC=/home/jieyao/CODE_TEST/CHANNEL/esio-0.1.9-build/include
 GSL_LIBRARY=-L$(GSL_LIB) -lgsl -lgslcblas -lstdc++ -lm
 GSL_INCLUDE = -I$(GSL_DIR)/include
 FFTW3_LIB=-L$(FFTW_LIB) -lfftw3_mpi -lfftw3 -lm
 FFTW3_INC=-I$(FFTW_INC)
-ESIO_LIBRARY = -L$(ESIO_LIB) -lesiof -lm
-ESIO_INCLUDE = -I$(ESIO_LIB)
-HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_hl -lhdf5 -lm -lz
+HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_fortran -lhdf5 -lm -lz
 HDF_INC=-I$(HDF_DIR)/include
 endif
 ########################################################################
@@ -181,50 +165,69 @@ FFTW_INC=/lustre/work/thomasbr/spack-yao/opt/spack/linux-centos8-zen2/gcc-10.1.0
 
 #HDF_DIR=/opt/apps/nfs/spack/opt/spack/linux-centos8-zen2/gcc-10.1.0/hdf5-1.10.6-bfqfwx3iaupxuyeqzx7lshc424gfeang
 HDF_DIR=/home/jieyao/CODE_TEST/CHANNEL/hdf5-1.8.18-build
-ESIO_LIB=/home/jieyao/CODE_TEST/CHANNEL/esio-0.1.9-build/lib
-ESIO_INC=/home/jieyao/CODE_TEST/CHANNEL/esio-0.1.9-build/include
 GSL_LIBRARY=-L$(GSL_LIB) -lgsl -lgslcblas -lstdc++ -lm
 GSL_INCLUDE = -I$(GSL_DIR)/include
 FFTW3_LIB=-L$(FFTW_LIB) -lfftw3_mpi -lfftw3 -lm
 FFTW3_INC=-I$(FFTW_INC)
-ESIO_LIBRARY = -L$(ESIO_LIB) -lesiof -lm
-ESIO_INCLUDE = -I$(ESIO_LIB)
-HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_hl -lhdf5 -lm -lz
+HDF_LIB=-L$(HDF_DIR)/lib -lhdf5_fortran -lhdf5 -lm -lz
 HDF_INC=-I$(HDF_DIR)/include
 endif
 ########################################################################
 
 
-LIBS=$(GSL_LIBRARY) $(FFTW3_LIB)  $(ESIO_LIBRARY) $(HDF_LIB) $(OTHERLIBS)
-INCLUDE= $(FFTW3_INC) $(GSL_INCLUDE) $(HDF_INC) $(ESIO_INCLUDE) -I$(ESIO_DIR)/lib $(OTHERINC)
 
+# Portable GNU/MPI build; h5pfc must come from a parallel HDF5 installation.
+ifeq ($(MACHINE),LOCAL)
+H5PFC ?= h5pfc
+FC = $(H5PFC)
+COMPILE = $(H5PFC)
+CC = mpicxx
+FFLAGS ?= -O3 -fopenmp -fallow-argument-mismatch
+CXXFLAGS ?= -O3 -fopenmp
+GSL_LIBRARY = $(if $(GSL_LIB),-L$(GSL_LIB),$(if $(GSL_DIR),-L$(GSL_DIR)/lib)) -lgsl -lgslcblas -lstdc++ -lm
+GSL_INCLUDE = $(if $(GSL_DIR),-I$(GSL_DIR)/include)
+FFTW3_LIB = $(if $(FFTW_LIB),-L$(FFTW_LIB)) -lfftw3_mpi -lfftw3
+FFTW3_INC = -I$(if $(FFTW_INC),$(FFTW_INC),/usr/include)
+HDF_LIB =
+HDF_INC =
+endif
+LIBS=$(GSL_LIBRARY) $(FFTW3_LIB)   $(HDF_LIB) $(OTHERLIBS)
+INCLUDE= $(FFTW3_INC) $(GSL_INCLUDE) $(HDF_INC)   $(OTHERINC)
+
+all: $(EXEC)
 ## build the executable ##
 $(EXEC): $(OBJECTS)
-	$(COMPILE) $(INCLUDE) $(OBJECTS) -o  $@ $(LDFLAGS) $(LIBS) 
+	$(COMPILE) $(FFLAGS) $(INCLUDE) $(OBJECTS) -o  $@ $(LDFLAGS) $(LIBS)
 
+
+# Explicit module prerequisites allow clean parallel builds.
+module_ppdfftw.o: module_timer.o module_runge_kutta.o module_global_variable.o module_labs.o
+$(filter-out module_hdf5_io.o module_timer.o module_global_variable.o module_labs.o module_runge_kutta.o module_ppdfftw.o labs_fill_full.o,$(OBJECTS)): module_ppdfftw.o module_labs.o
+initial_step.o data_store.o get_statistics.o write_energy_spectra.o: module_hdf5_io.o
+labs_fill_full.o: gsl_bspline_compat.h
 # build cpp object files
 %.o: %.cpp
-	@echo building $< 
-	$(CC) -c $(CFLAGS) $(INCLUDE) $< -o $@
+	@echo building $<
+	$(CC) $(CXXFLAGS) -c $(CFLAGS) $(INCLUDE) $< -o $@
 
 # build f90 object files
 %.o: %.f90
-	@echo building $< 
-	$(FC) -c $(CFLAGS) $(INCLUDE) $< -o $@
+	@echo building $<
+	$(FC) $(FFLAGS) -c $(CFLAGS) $(INCLUDE) $< -o $@
 
 # build f object files
 %.o: %.f
-	@echo building $< 
-	$(FC) -c $(CFLAGS) $(INCLUDE) $< -o $@
+	@echo building $<
+	$(FC) $(FFLAGS) -c $(CFLAGS) $(INCLUDE) $< -o $@
 
 
 # build c object files
 %.o: %.c
 	@echo building $<
-	$(CC) -c $(CFLAGS) $(INCLUDE) $< -o $@
+	$(CC) $(CXXFLAGS) -c $(CFLAGS) $(INCLUDE) $< -o $@
 
 # clean directive 'make clean'
 clean:
-	- /bin/rm -f $(EXEC) *.o *.mod *~ \#* 
+	- /bin/rm -f $(EXEC) *.o *.mod *~ \#*
 	@echo 'files cleaned'
 

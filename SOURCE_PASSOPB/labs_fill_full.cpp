@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // Linear Algebra for B-Spline (LABS)
 //
-// This external function calculate the matrices and vectors 
+// This external function calculate the matrices and vectors
 // to use B-Spline
 //
 // It needs to be written in CPP file because B-spline module in GSL
@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <cmath>
 #include <gsl/gsl_bspline.h>
+#include "gsl_bspline_compat.h"
 #include <gsl/gsl_integration.h>
 #include <iostream>
 #include <string>
@@ -24,7 +25,7 @@
 
 using namespace std;
 
-void bspline_integration_coefficients(const size_t nderiv, double *coeffs, size_t inc,  gsl_matrix *dB, gsl_bspline_workspace *w, gsl_bspline_deriv_workspace *dw);
+void bspline_integration_coefficients(const size_t nderiv, double *coeffs, size_t inc,  gsl_matrix *dB, gsl_bspline_workspace *w, channel_deriv_workspace *dw);
 
 extern "C" {
   void LABS_fill_full(double *M0, double *M1, double *M2, double *M3, double *M4, double *yc, double *yknot, double *int_coeff, double *center_coeff, int *K, int *N, double *STRETCH, double *Ly);
@@ -46,8 +47,8 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
   const double stretch = *STRETCH;
   const double ly = *Ly;
   // allocation GSL variables
-  gsl_bspline_workspace *BW;                    //The information of B-Splines  
-  gsl_bspline_deriv_workspace *DBW;             //The workspace of B-Splines Derivatives
+  gsl_bspline_workspace *BW;                    //The information of B-Splines
+  channel_deriv_workspace *DBW;             //The workspace of B-Splines Derivatives
   gsl_matrix *BM;                               //Matrix of Bsplines at collocation points
   gsl_vector *y;                                //breakpoint
   gsl_vector *B1;                               //Bsplines at a given collocation point
@@ -58,10 +59,10 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
   gsl_matrix *DB2;                              //Matrix of 2nd order derivative at collocation points
   gsl_matrix *DB3;                              //Matrix of 3rd order derivative at collocation points
   gsl_matrix *DB4;                              //Matrix of 4th order derivative at collocation points
-  
+
 
   BW   = gsl_bspline_alloc(k,nbreak);
-  DBW  = gsl_bspline_deriv_alloc(k);
+  DBW  = channel_deriv_alloc(k);
   B1   = gsl_vector_alloc(nknots);
   y    = gsl_vector_alloc(nbreak);
   BM   = gsl_matrix_alloc(nknots, nknots);
@@ -76,7 +77,7 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
 
   // calculate the location of breakpoints
   // cout << "The location of break points" << endl;
-  if (abs(stretch) <= 0.0000000000000001) 
+  if (abs(stretch) <= 0.0000000000000001)
     for (i=0; i<nbreak; ++i){
       double yi = -1.0 + 2.0/(nbreak-1)*i;
       gsl_vector_set(y,i,yi);
@@ -88,10 +89,10 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
       //  double yi = 0.5*ly*tanh(stretch*(-1.0+(2.0*i)/(nbreak-1)))/tanh(stretch);
 
       // Jimenez Grid with Stretch Factor
-      double yi = sin(stretch*PI/2.0*(-1.0+(2.0*i)/(nbreak-1)))/sin(stretch*PI/2.0); 
+      double yi = sin(stretch*PI/2.0*(-1.0+(2.0*i)/(nbreak-1)))/sin(stretch*PI/2.0);
 
       // Chebyshev Polynomial Grid Spacing
-      // double yi = -cos(0.5*PI*((2.0*i)/(nbreak-1))); 
+      // double yi = -cos(0.5*PI*((2.0*i)/(nbreak-1)));
 
       // printf("%24.16e \n",yi);
       gsl_vector_set(y,i,yi);
@@ -106,7 +107,7 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
     double yci = gsl_bspline_greville_abscissa (i,BW);
     // cout << yci << endl;
     gsl_vector_set(ycol,i,yci);
-    gsl_bspline_deriv_eval(yci,4,DB,BW,DBW);
+    channel_deriv_eval(yci,4,DB,BW,DBW);
     for (j=0; j<nknots; ++j){
       gsl_matrix_set(DB1,i,j,gsl_matrix_get(DB,j,1));
       gsl_matrix_set(DB2,i,j,gsl_matrix_get(DB,j,2));
@@ -114,14 +115,14 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
       gsl_matrix_set(DB4,i,j,gsl_matrix_get(DB,j,4));
     }
   }
-  
+
 
   for(i=0;i<nknots;++i){
     double yci = gsl_vector_get(ycol,i);
     // Calculate the B-Spline Basis Function at given location
     // in this case, the location is breakpoint
     gsl_bspline_eval(yci,B1,BW);
-   
+
     // Store the 1 column of B-spline Basis Functions into a Matrix
     for (j=0;j<nknots;++j){
       double Bj = gsl_vector_get(B1,j);
@@ -151,7 +152,7 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
 
   /*
   // print out the matrix
-  printf("\nThe matrix of value of B-Spline basis functions at given collocation points\n"); 
+  printf("\nThe matrix of value of B-Spline basis functions at given collocation points\n");
   for(i=0;i<nknots;++i){
     for(j=0;j<nknots;++j){
       //      printf ("%f ", M0[j+i*nknots]);
@@ -160,7 +161,7 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
     printf ("\n");
   }
 
-  printf("\nThe matrix of value of 1st order derivative of B-Spline basis functions at given collocation points\n"); 
+  printf("\nThe matrix of value of 1st order derivative of B-Spline basis functions at given collocation points\n");
   for(i=0;i<nknots;++i){
     for(j=0;j<nknots;++j){
       // printf ("%f ", M1[j+i*nknots]);
@@ -168,8 +169,8 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
     }
     printf ("\n");
   }
-    
-  printf("\nThe matrix of value of 2nd order derivative of B-Spline basis functions at given collocation points\n"); 
+
+  printf("\nThe matrix of value of 2nd order derivative of B-Spline basis functions at given collocation points\n");
   for(i=0;i<nknots;++i){
     for(j=0;j<nknots;++j){
       //printf ("%f ", M2[j+i*nknots]);
@@ -179,7 +180,7 @@ void LABS_fill_full (double *M0, double *M1, double *M2, double *M3, double *M4,
   }
   */
   gsl_bspline_free(BW);
-  gsl_bspline_deriv_free(DBW);	 
+  channel_deriv_free(DBW);
   gsl_vector_free(B1);
   gsl_vector_free(y);
   gsl_matrix_free(BM);
@@ -208,7 +209,7 @@ void bspline_integration_coefficients(
 					  size_t inc,
 					  gsl_matrix *dB,
 					  gsl_bspline_workspace *w,
-					  gsl_bspline_deriv_workspace *dw)
+					  channel_deriv_workspace *dw)
 {
   /* Obtain an appropriate order Gauss-Legendre integration rule */
     gsl_integration_glfixed_table * const tbl
@@ -238,7 +239,7 @@ void bspline_integration_coefficients(
 
 	/* Evaluate basis functions at point xj */
 	size_t kstart, kend;
-	gsl_bspline_deriv_eval_nonzero(xj, nderiv,
+	channel_deriv_eval_nonzero(xj, nderiv,
 				       dB, &kstart, &kend, w, dw);
 
 	/* Accumulate weighted basis evaluations into coeffs */
